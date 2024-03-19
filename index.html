@@ -2,22 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>OverBlogWatch</title>
+    <title>Button State Example</title>
+    <!-- Incluyendo las bibliotecas de React y Babel -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <style>
-        body {
-            background-color: #FA9C1D;
-        }
-    </style>
 </head>
+<style>
+    body {
+        background-color: #FA9C1D;
+    }
+</style>
 <body>
+    <!-- El div donde se montará la aplicación de React -->
     <div id="root"></div>
-    <script type="text/babel">
-        
-        // Paleta de colores base
-        const color_palette = ['#FA9C1D', '#4A4C4E', '#FFFFFF', '#000000']
+    <!-- Inicio del script de JavaScript -->
+    <script type="text/babel"> 
+
+const color_palette = ['#FA9C1D', '#4A4C4E', '#FFFFFF', '#000000']
     
         // Hooks para el manejo de estados 
         const { useState, useEffect } = React;
@@ -30,47 +32,80 @@
             pointerEvents: 'none'
         };
 
-        // Estilos del titulo
+        // Estilos del título ajustados para no usar position: fixed
         const titleStyle = {
-            position: 'fixed',
-            top: '10%',
-            left: '50%',
-            transform: 'translateX(-50%)',
             textAlign: 'center',
-            color: color_palette[3]     
+            color: color_palette[3],
+            margin: '10% auto 0',
         };
 
         // Estilos cuerpo
         const bodyStyle = {
-            position: 'fixed',
+            position: 'absolute',
             top: 0,
             left: '50%',
             transform: 'translateX(-50%)',
             textAlign: 'center',
             width: '50%',
-            height: '100%',
+            minHeight: '100%',
             backgroundColor: color_palette[2],
-            padding: '20px'
+            padding: '20px',
+            overflowY: 'auto',
         };
 
         // Estilos del post
         const postStyle = {
-            position: 'fixed',
-            top: '20%',
-            padding: '20px', // Espaciado interno para el post
-            margin: '20px 0', // Margen externo para el post
-            color: color_palette[3]     
+            padding: '20px', 
+            margin: '20px 0',
+            color: color_palette[1]     
         };
 
+        // Estilos CSS para el componente Loading
+        const loadingStyles = {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh'
+        };
 
-        // Componente post
-        const Post = ({ username, date, content, image }) => {
+        // Estilos CSS para el texto dentro del componente Loading
+        const loadingTextStyles = {
+            fontSize: '24px',
+            fontWeight: 'bold'
+        };
+
+        // Estilos CSS para el componente EmptyState
+        const emptyStateStyles = {
+            textAlign: 'center',
+            marginTop: '20px'
+        };
+
+        // Componente funcional para mostrar un mensaje de carga
+        const Loading = () => (
+            <div style={loadingStyles}>
+                <p style={loadingTextStyles}>Loading...</p>
+            </div>
+        );
+
+        // Componente funcional para mostrar un mensaje cuando no hay publicaciones
+        const EmptyState = () => (
+            <p style={emptyStateStyles}>No posts available.</p>
+        );
+
+        // Componente Post para representar cada publicación individualmente
+        const Post = ({ titulo, contenido, idUsuario, fecha, imagen }) => {
+            // Definir los estilos para la imagen
+            const imageStyle = {
+                width: '100%',
+                height: 'auto'
+            };
+
             return (
                 <div style={postStyle}>
-                    <h2>{username}</h2>
-                    <p>{date}</p>
-                    <p>{content}</p>
-                    <img src={image} alt="Post" style={{ maxWidth: '100%', height: 'auto' }} />
+                    <h2>Usuario: {idUsuario} - "{titulo}"</h2>
+                    <p>{contenido}</p>
+                    <img src={imagen} alt="Post Image" style={imageStyle} />
+                    <p>Fecha: {fecha}</p>
                 </div>
             );
         };
@@ -85,39 +120,88 @@
             );
         };
 
-
+        // Componente principal de la aplicación
         const App = () => {
-            // Hook de estados de la posición del mouse
-            const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-        useEffect(() => {
-            const mouseMove = (e) => {
-                setMousePosition({ x: e.clientX, y: e.clientY });
-            };
-
-            window.addEventListener("mousemove", mouseMove);
             
-            return () => {
-                window.removeEventListener("mousemove", mouseMove);
+            // Hook de estados de la posición del mouse
+             const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+            useEffect(() => {
+                const mouseMove = (e) => {
+                    setMousePosition({ x: e.clientX, y: e.clientY });
+                };
+
+                window.addEventListener("mousemove", mouseMove);
+                
+                return () => {
+                    window.removeEventListener("mousemove", mouseMove);
+                };
+            }, []);
+
+            // Estado para almacenar las publicaciones
+            const [posts, setPosts] = React.useState([]);
+            // Estado para controlar el estado de carga
+            const [loading, setLoading] = React.useState(true);
+
+            // Función asincrónica para obtener datos de la API
+            const fetchData = async () => {
+                try {
+                    console.log("Fetching data...");
+                    const response = await fetch("https://api.tiburoncin.lat/22801/posts");
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    const data = await response.json();
+                    console.log("Data received:", data);
+                    // Procesamiento de datos antes de establecer el estado
+                    const postsWithImages = data.map(post => ({
+                        ...post,
+                        Imagen: `data:image/png;base64,${post.Imagen}`,
+                        Fecha: new Date(post.Fecha).toISOString().split('T')[0]
+                    }));
+                    setPosts(postsWithImages);
+                    setLoading(false); // Marcar carga completa
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                    setLoading(false); // Marcar carga completa incluso en caso de error
+                }
             };
-        }, []);
 
-        return (
-            <div className='App' style={bodyStyle}>
-            <h1 style={titleStyle}>OverBlogWatch</h1>
-            <div style={postStyle}> {/* Estilo del post */}
-                <p style={postStyle}> {/* Estilo para el texto Lorem Ipsum */}
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam vitae tellus ac ligula posuere aliquet. Sed in neque id justo posuere ultricies...
-                </p>
-            </div>
-            <Cursor mousePosition={mousePosition} />
-        </div>
-        );
-    
-    };
+            // Efecto secundario para llamar a fetchData una vez que el componente se monta
+            React.useEffect(() => {
+                fetchData();
+            }, []);
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+            // Renderizado condicional basado en el estado de carga y la disponibilidad de publicaciones
+            return (
+                <div className='App' style={bodyStyle}>
+                    <h1 style={titleStyle}>OverBlogWatch</h1>
+                    {loading ? (
+                        <Loading />
+                    ) : posts.length === 0 ? (
+                        <EmptyState />
+                    ) : (
+                        <div>
+                            {posts.map(post => (
+                                <Post
+                                    key={post.Id_post}
+                                    titulo={post.Titulo}
+                                    contenido={post.Contenido}
+                                    idUsuario={post.Id_usuario}
+                                    fecha={post.Fecha}
+                                    imagen={post.Imagen}
+                                />
+                            ))}
+                        </div>
+                    )}
+                    <Cursor mousePosition={mousePosition} />
+                </div>
+            );
+        };
+
+        // Montar la aplicación en el elemento con el ID 'root'
+        const root = ReactDOM.createRoot(document.getElementById('root'))
+        root.render(<App />)
     </script>
 </body>
 </html>

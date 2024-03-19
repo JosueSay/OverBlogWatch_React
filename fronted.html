@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OverBlogWatch</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            background-color: #FA9C1D;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        
+        // Paleta de colores base
+        const color_palette = ['#FA9C1D', '#4A4C4E', '#FFFFFF', '#000000']
+    
+        // Hooks para el manejo de estados 
+        const { useState, useEffect } = React;
+
+        // Estilo cursor
+        const style_cursor = {
+            position: 'fixed',
+            width: '32px',
+            height: '32px',
+            pointerEvents: 'none'
+        };
+
+        // Estilos del titulo
+        const titleStyle = {
+            position: 'fixed',
+            top: '10%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            textAlign: 'center',
+            color: color_palette[3]     
+        };
+
+        // Estilos cuerpo
+        const bodyStyle = {
+            position: 'fixed',
+            top: 0,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            textAlign: 'center',
+            width: '50%',
+            height: '100%',
+            backgroundColor: color_palette[2],
+            padding: '20px'
+        };
+
+        // Estilos del post
+        const postStyle = {
+            position: 'fixed',
+            top: '20%',
+            padding: '20px', // Espaciado interno para el post
+            margin: '20px 0', // Margen externo para el post
+            color: color_palette[3]     
+        };
+
+
+        // Componente post
+        const Post = ({ username, date, content, image }) => {
+            return (
+                <div style={postStyle}>
+                    <h2>{username}</h2>
+                    <p>{date}</p>
+                    <p>{content}</p>
+                    <img src={image} alt="Post" style={{ maxWidth: '100%', height: 'auto' }} />
+                </div>
+            );
+        };
+
+        // Componente cursor
+        const Cursor = ({ mousePosition }) => {
+            const cursorLeft = mousePosition.x - (window.innerWidth * 0.25);
+            const cursorTop = mousePosition.y;
+
+            return (
+                <img src="media/mouse_icon.png" alt="Cursor" style={{ ...style_cursor, left: cursorLeft, top: cursorTop }} />
+            );
+        };
+
+
+        const App = () => {
+            // Hook de estados de la posición del mouse
+            const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+            useEffect(() => {
+                const mouseMove = (e) => {
+                    setMousePosition({ x: e.clientX, y: e.clientY });
+                };
+
+                window.addEventListener("mousemove", mouseMove);
+                
+                return () => {
+                    window.removeEventListener("mousemove", mouseMove);
+                };
+            }, []);
+
+            return (
+                <div className='App' style={bodyStyle}>
+                <h1 style={titleStyle}>OverBlogWatch</h1>
+                <div style={postStyle}> {/* Estilo del post */}
+                    <p style={postStyle}> {/* Estilo para el texto Lorem Ipsum */}
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam vitae tellus ac ligula posuere aliquet. Sed in neque id justo posuere ultricies...
+                    </p>
+                </div>
+                <Cursor mousePosition={mousePosition} />
+                </div>
+            );
+    
+    };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
