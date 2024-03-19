@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Button State Example</title>
+    <title>OverBlogWatch</title>
     <!-- Incluyendo las bibliotecas de React y Babel -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -32,7 +32,7 @@ const color_palette = ['#FA9C1D', '#4A4C4E', '#FFFFFF', '#000000']
             pointerEvents: 'none'
         };
 
-        // Estilos del título ajustados para no usar position: fixed
+        // Estilos del título
         const titleStyle = {
             textAlign: 'center',
             color: color_palette[3],
@@ -50,7 +50,7 @@ const color_palette = ['#FA9C1D', '#4A4C4E', '#FFFFFF', '#000000']
             minHeight: '100%',
             backgroundColor: color_palette[2],
             padding: '20px',
-            overflowY: 'auto',
+            //overflowY: 'auto',
         };
 
         // Estilos del post
@@ -112,13 +112,14 @@ const color_palette = ['#FA9C1D', '#4A4C4E', '#FFFFFF', '#000000']
 
         // Componente cursor
         const Cursor = ({ mousePosition }) => {
-            const cursorLeft = mousePosition.x - (window.innerWidth * 0.25);
-            const cursorTop = mousePosition.y;
+            const cursorLeft = mousePosition.x - (window.innerWidth * 0.25) + window.scrollX;
+            const cursorTop = mousePosition.y + window.scrollY;
 
             return (
                 <img src="media/mouse_icon.png" alt="Cursor" style={{ ...style_cursor, left: cursorLeft, top: cursorTop }} />
             );
         };
+
 
         // Componente principal de la aplicación
         const App = () => {
