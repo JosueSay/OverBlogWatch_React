@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Button State Example</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        .pressed { background-color: lightgrey; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel"> 
+
+    const App = () => {
+        const [posts, setPosts] = React.useState([]);
+
+        React.useEffect(() => {
+            console.log("Fetching data...");
+            fetch("https://api.tiburoncin.lat/22801/posts")
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Data received:", data);
+                    // Convertir la imagen de base64 a URL de datos (data URL) para cada post
+                    const postsWithImages = data.map(post => ({
+                        ...post,
+                        Imagen: `data:image/png;base64,${post.Imagen}`,
+                        Fecha: new Date(post.Fecha).toISOString().split('T')[0] // Formato YYYY/MM/DD
+                    }));
+                    setPosts(postsWithImages);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }, []);
+
+        return (
+            <div>
+                <h1>All Posts</h1>
+                <div>
+                    {posts.map(post => (
+                        <div key={post.Id_post}>
+                            <h2>{post.Titulo}</h2>
+                            <p>{post.Contenido}</p>
+                            <p>User ID: {post.Id_usuario}</p>
+                            <p>Date: {post.Fecha}</p>
+                            <img src={post.Imagen} alt="Post Image" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'))
+    root.render(<App />)
+    </script>
+</body>
+</html>
